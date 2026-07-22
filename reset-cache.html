@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset 3D Shapes Adventure</title>
+  <style>
+    body {
+      display: grid;
+      min-height: 100vh;
+      margin: 0;
+      place-items: center;
+      background: linear-gradient(135deg, #ffe66d, #dff7e7);
+      color: #172033;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    main {
+      width: min(92vw, 520px);
+      padding: 28px;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 20px 50px rgba(23, 32, 51, 0.18);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 2rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 14px 22px;
+      border-radius: 18px;
+      background: #009739;
+      color: white;
+      font-weight: 900;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Refreshing App</h1>
+    <p id="status">Clearing the old offline copy so the clean version can load.</p>
+    <a href="index.html?v=20260722-self-taught-lessons">Open App</a>
+  </main>
+  <script>
+    async function resetAppCache() {
+      try {
+        if ("serviceWorker" in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+
+        if ("caches" in window) {
+          const names = await caches.keys();
+          await Promise.all(names.map((name) => caches.delete(name)));
+        }
+
+        document.getElementById("status").textContent = "Done. Opening the clean version now.";
+      } catch (error) {
+        document.getElementById("status").textContent = "Cache reset finished. Open the app again.";
+      }
+
+      setTimeout(() => {
+        window.location.href = "index.html?v=20260722-self-taught-lessons";
+      }, 900);
+    }
+
+    resetAppCache();
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "name": "3D Shapes Adventure Learning Platform",
+  "short_name": "3D Shapes",
+  "description": "An offline-first Ghana Basic 1-6 educational platform for lessons, quizzes, worksheets, dashboards, rewards, and certificates.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fff7dc",
+  "theme_color": "#ef3340",
+  "categories": ["education", "kids", "productivity"],
+  "lang": "en-GH",
+  "icons": [
+    {
+      "src": "icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Learning",
+      "short_name": "Learn",
+      "url": "./index.html#learn",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Worksheets",
+      "short_name": "Sheets",
+      "url": "./index.html#worksheets",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

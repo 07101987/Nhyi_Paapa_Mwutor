@@ -1,0 +1,11 @@
+.agents/
+.codex/
+desktop-package/
+linux-package/
+ipad-package/
+3D_Shapes_Adventure_Platform/
+*.zip
+*.tar.gz
+*.pdf
+App.jpg
+App.png
