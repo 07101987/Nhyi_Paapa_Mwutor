@@ -530,6 +530,7 @@ function writingTool(source = "practice") {
   const targets = writingTargets();
   const current = targets.find((item) => item.value === state.writingTarget) || targets[0];
   state.writingTarget = current.value;
+  const sizeClass = traceSizeClass(current.value);
   return `
     <section class="manipulative-card writing-lab">
       <div class="tool-header">
@@ -549,7 +550,7 @@ function writingTool(source = "practice") {
         <div class="writing-lines">
           <span></span><span></span><span></span>
         </div>
-        <div class="trace-text">${current.value}</div>
+        <div class="trace-text ${sizeClass}">${current.value}</div>
         <canvas class="trace-canvas" data-trace-canvas aria-label="Draw here to trace"></canvas>
         <div class="start-dot">start</div>
       </div>
@@ -608,6 +609,14 @@ function writingTargets() {
     ]
   };
   return sets[state.writingMode] || sets.letters;
+}
+
+function traceSizeClass(value) {
+  const length = String(value || "").length;
+  if (length <= 1) return "trace-xl";
+  if (length <= 2) return "trace-lg";
+  if (length <= 5) return "trace-md";
+  return "trace-word";
 }
 
 function matchingGame() {

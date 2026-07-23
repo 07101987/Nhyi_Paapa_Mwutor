@@ -1,11 +1,11 @@
-const CACHE_NAME = "shapes-adventure-platform-v12-ipad-air-compatible";
+const CACHE_NAME = "shapes-adventure-platform-v13-large-tracing";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./reset-cache.html",
   "./manifest.webmanifest",
-  "./css/styles.css?v=20260723-ipad-air-compatible",
-  "./js/app.js?v=20260723-ipad-air-compatible",
+  "./css/styles.css?v=20260723-large-tracing",
+  "./js/app.js?v=20260723-large-tracing",
   "./js/data/curriculum.js",
   "./js/data/badges.js",
   "./js/services/db.js",

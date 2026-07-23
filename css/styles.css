@@ -523,7 +523,7 @@ p {
 .writing-board {
   position: relative;
   display: grid;
-  min-height: 230px;
+  min-height: 320px;
   place-items: center;
   overflow: hidden;
   border: 3px solid rgba(40, 100, 217, 0.25);
@@ -550,7 +550,7 @@ p {
   max-width: 92%;
   color: transparent;
   font-family: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
-  font-size: clamp(4.5rem, 24vw, 10rem);
+  font-size: clamp(5rem, 28vw, 12rem);
   font-weight: 1000;
   line-height: 1;
   letter-spacing: 0;
@@ -560,6 +560,25 @@ p {
     0 0 0 rgba(255, 255, 255, 0),
     10px 10px 0 rgba(252, 209, 22, 0.18);
   pointer-events: none;
+}
+
+.trace-text.trace-xl {
+  font-size: clamp(9rem, 46vw, 18rem);
+  -webkit-text-stroke-width: 4px;
+}
+
+.trace-text.trace-lg {
+  font-size: clamp(7rem, 36vw, 15rem);
+  -webkit-text-stroke-width: 4px;
+}
+
+.trace-text.trace-md {
+  font-size: clamp(5.5rem, 24vw, 11rem);
+}
+
+.trace-text.trace-word {
+  font-size: clamp(3.4rem, 15vw, 7.5rem);
+  line-height: 1.08;
 }
 
 .trace-canvas {
@@ -1091,6 +1110,18 @@ body.dark .bottom-nav {
 
   .lesson-visual {
     min-height: 420px;
+  }
+
+  .writing-board {
+    min-height: 420px;
+  }
+
+  .trace-text.trace-xl {
+    font-size: clamp(12rem, 32vw, 22rem);
+  }
+
+  .trace-text.trace-lg {
+    font-size: clamp(9rem, 28vw, 18rem);
   }
 
   .hero {
