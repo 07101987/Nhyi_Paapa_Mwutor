@@ -516,6 +516,80 @@ p {
   background: var(--blue);
 }
 
+.writing-lab {
+  gap: 14px;
+}
+
+.writing-board {
+  position: relative;
+  display: grid;
+  min-height: 230px;
+  place-items: center;
+  overflow: hidden;
+  border: 3px solid rgba(40, 100, 217, 0.25);
+  border-radius: 22px;
+  background: #fffdf4;
+  touch-action: none;
+}
+
+.writing-lines {
+  position: absolute;
+  inset: 22px;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  pointer-events: none;
+}
+
+.writing-lines span {
+  border-bottom: 3px dashed rgba(40, 100, 217, 0.28);
+}
+
+.trace-text {
+  position: relative;
+  z-index: 1;
+  max-width: 92%;
+  color: transparent;
+  font-family: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
+  font-size: clamp(4.5rem, 24vw, 10rem);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  -webkit-text-stroke: 3px rgba(239, 51, 64, 0.65);
+  text-shadow:
+    0 0 0 rgba(255, 255, 255, 0),
+    10px 10px 0 rgba(252, 209, 22, 0.18);
+}
+
+.start-dot {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 1000;
+}
+
+.writing-prompt,
+.writing-copy {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(252, 209, 22, 0.2);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.writing-copy span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 .subject-card.locked {
   opacity: 0.55;
 }

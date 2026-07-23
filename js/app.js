@@ -21,6 +21,8 @@ const state = {
   exam: null,
   worksheet: null,
   playTool: "counters",
+  writingMode: "letters",
+  writingTarget: "A",
   play: {
     counters: 6,
     clockHour: 3,
@@ -96,6 +98,7 @@ function screen() {
   const routes = {
     home: homeScreen,
     learn: learnScreen,
+    subject: subjectScreen,
     lesson: lessonScreen,
     practice: practiceScreen,
     playroom: playroomScreen,
@@ -192,25 +195,40 @@ function homeScreen() {
 }
 
 function learnScreen() {
+  return `
+    <section class="panel">
+      <div class="section-title">
+        <div>
+          <h2>Choose a Subject</h2>
+          <p>Select one subject. It will open on its own page with ${state.grade} terms, topics, lessons, and quizzes.</p>
+        </div>
+        <select class="select" data-action="change-grade">
+          ${["Basic 1", "Basic 2", "Basic 3", "Basic 4", "Basic 5", "Basic 6"].map((grade) => `<option ${grade === state.grade ? "selected" : ""}>${grade}</option>`).join("")}
+        </select>
+      </div>
+      <div class="subject-grid">
+        ${SUBJECTS.map(subjectCard).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function subjectScreen() {
   const subject = getSubject();
   const topics = getTopics();
   return `
     <section class="panel">
       <div class="section-title">
         <div>
-          <h2>Learn Everything</h2>
-          <p>Choose a subject, then follow the map. Lessons unlock as ${state.student.name} completes activities.</p>
+          <h2>${subjectIcon(subject)} ${subject.name}</h2>
+          <p>${state.grade}, Term ${state.term}. ${subject.fullName || subject.name}. Follow the topic map and complete each lesson.</p>
         </div>
+        <button class="secondary" data-route="learn">All Subjects</button>
       </div>
-      <div class="subject-grid">
-        ${SUBJECTS.map(subjectCard).join("")}
-      </div>
-    </section>
-    <section class="panel">
       <div class="section-title">
         <div>
-          <h2>${subjectIcon(subject)} ${subject.name}</h2>
-          <p>${state.grade}, Term ${state.term}. ${subject.fullName || subject.name}</p>
+          <h3>Choose Term</h3>
+          <p>Each topic has Understand, Examples, and Practice lessons.</p>
         </div>
         <select class="select" data-action="change-grade">
           ${["Basic 1", "Basic 2", "Basic 3", "Basic 4", "Basic 5", "Basic 6"].map((grade) => `<option ${grade === state.grade ? "selected" : ""}>${grade}</option>`).join("")}
@@ -363,6 +381,7 @@ function practiceScreen() {
         ${activityButton("Match", "Picture Matching", "Match real objects to the right 3D shape.", "matching")}
         ${activityButton("Memo", "Memory Game", "Flip cards and remember matching pairs.", "memory")}
         ${activityButton("Cards", "Flash Cards", "Quick subject flash cards for revision.", "flashcards")}
+        ${activityButton("Write", "Writing and Tracing", "Trace letters, numbers, words, and your name.", "writing")}
       </div>
       <div id="practiceArea">${practiceActivity()}</div>
     </section>
@@ -381,6 +400,7 @@ function practiceActivity() {
   }
   if (mode === "memory") return memoryGame();
   if (mode === "flashcards") return flashCards();
+  if (mode === "writing") return writingTool("practice");
   return matchingGame();
 }
 
@@ -389,7 +409,8 @@ function playroomScreen() {
     ["counters", "Counters", "Count, add, subtract, and make number bonds."],
     ["clock", "Clock", "Move the hour and minute hands to practise time."],
     ["spinner", "Spinner", "Spin for quick revision prompts and classroom turns."],
-    ["board", "Pattern Board", "Tap squares to make patterns, shapes, and picture answers."]
+    ["board", "Pattern Board", "Tap squares to make patterns, shapes, and picture answers."],
+    ["writing", "Writing", "Trace letters, numbers, sight words, and names."]
   ];
   return `
     <section class="panel">
@@ -411,6 +432,7 @@ function playTool() {
   if (state.playTool === "clock") return clockTool();
   if (state.playTool === "spinner") return spinnerTool();
   if (state.playTool === "board") return patternBoardTool();
+  if (state.playTool === "writing") return writingTool("play");
   return countersTool();
 }
 
@@ -501,6 +523,87 @@ function patternBoardTool() {
       </div>
     </section>
   `;
+}
+
+function writingTool(source = "practice") {
+  const targets = writingTargets();
+  const current = targets.find((item) => item.value === state.writingTarget) || targets[0];
+  state.writingTarget = current.value;
+  return `
+    <section class="manipulative-card writing-lab">
+      <div class="tool-header">
+        <h3>Writing and Tracing</h3>
+        <span class="tool-score">${current.label}</span>
+      </div>
+      <p>Trace with your finger first. Then copy it with pencil in your exercise book. Start at the dot, go slowly, and say the sound or word aloud.</p>
+      <div class="pill-row">
+        ${[
+          ["letters", "Letters"],
+          ["numbers", "Numbers"],
+          ["words", "Sight Words"],
+          ["name", "My Name"]
+        ].map(([mode, label]) => `<button class="${state.writingMode === mode ? "primary" : "secondary"}" data-writing-mode="${mode}">${label}</button>`).join("")}
+      </div>
+      <div class="writing-board" aria-label="Tracing board">
+        <div class="writing-lines">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="trace-text">${current.value}</div>
+        <div class="start-dot">start</div>
+      </div>
+      <div class="writing-prompt">
+        <strong>Teacher prompt:</strong>
+        <span>${current.prompt}</span>
+      </div>
+      <label class="writing-copy">
+        <span>Type or copy what you wrote:</span>
+        <input class="input" value="" placeholder="${current.value}" data-writing-input />
+      </label>
+      <div class="action-row">
+        <button class="secondary" data-writing-action="previous">Previous</button>
+        <button class="primary" data-writing-action="next">Next</button>
+        <button class="secondary" data-action="read-writing">Read Prompt</button>
+        <button class="primary" data-writing-action="done">I Wrote It</button>
+      </div>
+      ${source === "practice" ? `<p class="pill">Tip: This same writing board is also inside Playroom.</p>` : ""}
+    </section>
+  `;
+}
+
+function writingTargets() {
+  const sets = {
+    letters: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => ({
+      value: letter,
+      label: `Letter ${letter}`,
+      prompt: `Say letter ${letter}. Trace the big ${letter}. Write it three times in the air and three times in your book.`
+    })),
+    numbers: Array.from({ length: 20 }, (_, index) => {
+      const number = String(index + 1);
+      return {
+        value: number,
+        label: `Number ${number}`,
+        prompt: `Count ${number} object${number === "1" ? "" : "s"}. Trace ${number}. Write it, then draw ${number} small circles.`
+      };
+    }),
+    words: ["I", "am", "the", "see", "my", "we", "go", "to", "school", "Ghana", "red", "gold", "green"].map((word) => ({
+      value: word,
+      label: word,
+      prompt: `Read the word ${word}. Trace it slowly. Copy it twice, then use it in a short sentence.`
+    })),
+    name: [
+      {
+        value: state.student?.name || "My Name",
+        label: "My Name",
+        prompt: `Trace your name. Say: My name is ${state.student?.name || "my name"}. Copy it neatly in your exercise book.`
+      },
+      {
+        value: "Nkunim",
+        label: "Nkunim",
+        prompt: "Trace Nkunim slowly. Start each capital letter at the top and keep your letters on the line."
+      }
+    ]
+  };
+  return sets[state.writingMode] || sets.letters;
 }
 
 function matchingGame() {
@@ -938,7 +1041,7 @@ function bindCommon() {
     button.addEventListener("click", () => {
       state.subjectId = button.dataset.subject;
       state.topicIndex = 0;
-      state.route = "learn";
+      state.route = "subject";
       render();
     });
   });
@@ -972,7 +1075,7 @@ function bindScreen() {
   document.querySelectorAll("[data-activity]").forEach((button) => {
     button.addEventListener("click", () => {
       const value = button.dataset.activity;
-      if (["matching", "memory", "flashcards", "shape-lessons"].includes(value)) {
+      if (["matching", "memory", "flashcards", "shape-lessons", "writing"].includes(value)) {
         sessionStorage.setItem("practiceMode", value);
         state.route = "practice";
       } else {
@@ -1030,6 +1133,16 @@ function bindScreen() {
   document.querySelectorAll("[data-board-cell]").forEach((button) => {
     button.addEventListener("click", () => toggleBoardCell(Number(button.dataset.boardCell)));
   });
+  document.querySelectorAll("[data-writing-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.writingMode = button.dataset.writingMode;
+      state.writingTarget = writingTargets()[0]?.value || "A";
+      render();
+    });
+  });
+  document.querySelectorAll("[data-writing-action]").forEach((button) => {
+    button.addEventListener("click", () => writingAction(button.dataset.writingAction));
+  });
 }
 
 async function handleAction(action) {
@@ -1050,6 +1163,7 @@ async function handleAction(action) {
     "restart-exam": () => startExam(state.exam?.type || "mock"),
     "save-exam": saveExam,
     "read-playroom": readPlayroom,
+    "read-writing": readWriting,
     "daily-reward": dailyReward,
     "new-worksheet": newWorksheet,
     "complete-worksheet": completeWorksheet,
@@ -1164,14 +1278,48 @@ function toggleBoardCell(index) {
   render();
 }
 
+async function writingAction(action) {
+  const targets = writingTargets();
+  const index = Math.max(0, targets.findIndex((item) => item.value === state.writingTarget));
+  if (action === "next") {
+    state.writingTarget = targets[(index + 1) % targets.length].value;
+    render();
+    return;
+  }
+  if (action === "previous") {
+    state.writingTarget = targets[(index - 1 + targets.length) % targets.length].value;
+    render();
+    return;
+  }
+  if (action === "done") {
+    state.progress.xp += 3;
+    state.progress.coins += 1;
+    await putOne("progress", state.progress);
+    toast("Great writing practice! XP and coins added.");
+    speak("Great writing practice.");
+    confetti(25);
+    render();
+  }
+}
+
 function readPlayroom() {
   const prompts = {
     counters: `Counters. There are ${state.play.counters} counters. Count each counter once. Add one or take one away.`,
     clock: `Teaching clock. The time is ${state.play.clockHour}:${String(state.play.clockMinute).padStart(2, "0")}. Say the time aloud.`,
     spinner: `Revision spinner. The task is ${state.play.spinnerResult}. Try it now.`,
-    board: `Pattern board. Tap boxes to make patterns, shapes, and picture answers.`
+    board: `Pattern board. Tap boxes to make patterns, shapes, and picture answers.`,
+    writing: readWritingText()
   };
   speak(prompts[state.playTool] || "Learning Playroom.");
+}
+
+function readWriting() {
+  speak(readWritingText());
+}
+
+function readWritingText() {
+  const current = writingTargets().find((item) => item.value === state.writingTarget) || writingTargets()[0];
+  return `Writing and tracing. ${current.label}. ${current.prompt}`;
 }
 
 async function saveQuiz() {

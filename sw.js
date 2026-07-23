@@ -1,11 +1,11 @@
-const CACHE_NAME = "shapes-adventure-platform-v9-self-taught-lessons";
+const CACHE_NAME = "shapes-adventure-platform-v10-writing-subject-view";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./reset-cache.html",
   "./manifest.webmanifest",
-  "./css/styles.css?v=20260722-self-taught-lessons",
-  "./js/app.js?v=20260722-self-taught-lessons",
+  "./css/styles.css?v=20260723-writing-subject-view",
+  "./js/app.js?v=20260723-writing-subject-view",
   "./js/data/curriculum.js",
   "./js/data/badges.js",
   "./js/services/db.js",
