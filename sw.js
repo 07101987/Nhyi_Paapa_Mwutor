@@ -1,11 +1,11 @@
-const CACHE_NAME = "shapes-adventure-platform-v10-writing-subject-view";
+const CACHE_NAME = "shapes-adventure-platform-v11-finger-tracing";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./reset-cache.html",
   "./manifest.webmanifest",
-  "./css/styles.css?v=20260723-writing-subject-view",
-  "./js/app.js?v=20260723-writing-subject-view",
+  "./css/styles.css?v=20260723-finger-tracing",
+  "./js/app.js?v=20260723-finger-tracing",
   "./js/data/curriculum.js",
   "./js/data/badges.js",
   "./js/services/db.js",

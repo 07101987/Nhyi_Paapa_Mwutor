@@ -23,6 +23,7 @@ const state = {
   playTool: "counters",
   writingMode: "letters",
   writingTarget: "A",
+  writingStrokes: [],
   play: {
     counters: 6,
     clockHour: 3,
@@ -549,6 +550,7 @@ function writingTool(source = "practice") {
           <span></span><span></span><span></span>
         </div>
         <div class="trace-text">${current.value}</div>
+        <canvas class="trace-canvas" data-trace-canvas aria-label="Draw here to trace"></canvas>
         <div class="start-dot">start</div>
       </div>
       <div class="writing-prompt">
@@ -562,6 +564,8 @@ function writingTool(source = "practice") {
       <div class="action-row">
         <button class="secondary" data-writing-action="previous">Previous</button>
         <button class="primary" data-writing-action="next">Next</button>
+        <button class="secondary" data-writing-action="clear">Clear</button>
+        <button class="secondary" data-writing-action="undo">Undo</button>
         <button class="secondary" data-action="read-writing">Read Prompt</button>
         <button class="primary" data-writing-action="done">I Wrote It</button>
       </div>
@@ -1143,6 +1147,7 @@ function bindScreen() {
   document.querySelectorAll("[data-writing-action]").forEach((button) => {
     button.addEventListener("click", () => writingAction(button.dataset.writingAction));
   });
+  setupTraceCanvas();
 }
 
 async function handleAction(action) {
@@ -1283,11 +1288,23 @@ async function writingAction(action) {
   const index = Math.max(0, targets.findIndex((item) => item.value === state.writingTarget));
   if (action === "next") {
     state.writingTarget = targets[(index + 1) % targets.length].value;
+    state.writingStrokes = [];
     render();
     return;
   }
   if (action === "previous") {
     state.writingTarget = targets[(index - 1 + targets.length) % targets.length].value;
+    state.writingStrokes = [];
+    render();
+    return;
+  }
+  if (action === "clear") {
+    state.writingStrokes = [];
+    render();
+    return;
+  }
+  if (action === "undo") {
+    state.writingStrokes.pop();
     render();
     return;
   }
@@ -1300,6 +1317,75 @@ async function writingAction(action) {
     confetti(25);
     render();
   }
+}
+
+function setupTraceCanvas() {
+  const canvas = document.querySelector("[data-trace-canvas]");
+  if (!canvas) return;
+  const context = canvas.getContext("2d");
+  let activeStroke = null;
+
+  const resize = () => {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.round(rect.width * ratio));
+    canvas.height = Math.max(1, Math.round(rect.height * ratio));
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    drawTraceStrokes(canvas, context);
+  };
+
+  const pointFromEvent = (event) => {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+  };
+
+  const start = (event) => {
+    event.preventDefault();
+    canvas.setPointerCapture?.(event.pointerId);
+    activeStroke = [pointFromEvent(event)];
+    state.writingStrokes.push(activeStroke);
+    drawTraceStrokes(canvas, context);
+  };
+
+  const move = (event) => {
+    if (!activeStroke) return;
+    event.preventDefault();
+    activeStroke.push(pointFromEvent(event));
+    drawTraceStrokes(canvas, context);
+  };
+
+  const end = (event) => {
+    if (!activeStroke) return;
+    event.preventDefault();
+    activeStroke = null;
+    canvas.releasePointerCapture?.(event.pointerId);
+  };
+
+  resize();
+  canvas.addEventListener("pointerdown", start);
+  canvas.addEventListener("pointermove", move);
+  canvas.addEventListener("pointerup", end);
+  canvas.addEventListener("pointercancel", end);
+  window.addEventListener("resize", resize, { once: true });
+}
+
+function drawTraceStrokes(canvas, context) {
+  const rect = canvas.getBoundingClientRect();
+  context.clearRect(0, 0, rect.width, rect.height);
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.lineWidth = Math.max(9, Math.min(18, rect.width / 34));
+  context.strokeStyle = "#2864d9";
+  state.writingStrokes.forEach((stroke) => {
+    if (!stroke.length) return;
+    context.beginPath();
+    context.moveTo(stroke[0].x, stroke[0].y);
+    stroke.slice(1).forEach((point) => context.lineTo(point.x, point.y));
+    context.stroke();
+  });
 }
 
 function readPlayroom() {
