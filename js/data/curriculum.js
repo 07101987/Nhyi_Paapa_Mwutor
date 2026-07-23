@@ -261,6 +261,23 @@ function genericDistractors(subject, item) {
   ];
 }
 
+function firstItem(items, fallback) {
+  return items && items.length ? items[0] : fallback;
+}
+
+function firstCheckQuestion(checks) {
+  return checks && checks[0] ? checks[0].q : "What did you learn today?";
+}
+
+function firstCheckAnswer(checks) {
+  return checks && checks[0] ? checks[0].a : "Parent observation";
+}
+
+function subjectTemplate(subject, item) {
+  const template = subjectTemplates[subject.id];
+  return template ? template(item) : {};
+}
+
 function makeWorksheet(subject, item, gradeIndex) {
   const teaching = makeTeacherLesson(subject, item, gradeIndex, 1);
   return {
@@ -270,17 +287,17 @@ function makeWorksheet(subject, item, gradeIndex) {
       `1. Draw or point to: ${item.examples[0] || item.title}`,
       `2. Say one thing about ${item.title}.`,
       `3. Complete: I can learn ${item.title} in ${subject.name}.`,
-      `4. Guided practice: ${teaching.guidedPractice?.[0] || item.activity}`,
-      `5. Independent practice: ${teaching.independentPractice?.[0] || item.activity}`,
-      `6. Quick check: ${teaching.checks?.[0]?.q || "What did you learn today?"}`
+      `4. Guided practice: ${firstItem(teaching.guidedPractice, item.activity)}`,
+      `5. Independent practice: ${firstItem(teaching.independentPractice, item.activity)}`,
+      `6. Quick check: ${firstCheckQuestion(teaching.checks)}`
     ],
     answers: [
       "Drawing or pointing answer",
       item.summary,
       subject.name,
-      teaching.guidedPractice?.[0] || item.activity,
-      teaching.independentPractice?.[0] || item.activity,
-      teaching.checks?.[0]?.a || "Parent observation"
+      firstItem(teaching.guidedPractice, item.activity),
+      firstItem(teaching.independentPractice, item.activity),
+      firstCheckAnswer(teaching.checks)
     ],
     level: gradeIndex + 1
   };
@@ -297,7 +314,7 @@ function genericWrongAnswers(answer) {
 
 function makeTeacherLesson(subject, item, gradeIndex, term) {
   const key = `${subject.id}:${item.title}`;
-  const template = subjectTemplates[subject.id]?.(item) || {};
+  const template = subjectTemplate(subject, item);
   const specific = { ...template, ...(teacherLessons[key] || {}) };
   const levelNote = gradeIndex === 0
     ? "Basic 1 focus: use real objects, oral language, pictures, tracing, and short answers."
@@ -664,3 +681,4 @@ export const curriculum = SUBJECTS.map((subject) => ({
     }))
   }))
 }));
+

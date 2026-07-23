@@ -4,6 +4,11 @@ const STORES = ["students", "progress", "events", "certificates", "assignments",
 
 let dbPromise;
 
+function uniqueId() {
+  if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+  return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export function openDb() {
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject) => {
@@ -62,9 +67,9 @@ export async function seedDefaultStudent() {
   const students = await getAll("students");
   if (students.length) return students;
   const student = {
-    id: crypto.randomUUID(),
+    id: uniqueId(),
     name: "My Child",
-    avatar: "🧒🏾",
+    avatar: "Child",
     grade: "Basic 1",
     createdAt: new Date().toISOString()
   };
@@ -96,7 +101,7 @@ export function defaultProgress(studentId) {
 
 export async function logEvent(type, payload = {}) {
   const event = {
-    id: crypto.randomUUID(),
+    id: uniqueId(),
     type,
     payload,
     createdAt: new Date().toISOString()
@@ -104,3 +109,4 @@ export async function logEvent(type, payload = {}) {
   await putOne("events", event);
   return event;
 }
+

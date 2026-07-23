@@ -1,4 +1,4 @@
-﻿import { SUBJECTS, curriculum, shapeLessons } from "./data/curriculum.js";
+import { SUBJECTS, curriculum, shapeLessons } from "./data/curriculum.js";
 import { badges } from "./data/badges.js";
 import { defaultProgress, getAll, getOne, logEvent, putOne, seedDefaultStudent } from "./services/db.js";
 import { registerPwa, setupInstallButton } from "./services/pwa.js";
@@ -447,7 +447,7 @@ function countersTool() {
       </div>
       <p>Teacher prompt: Count each counter once. Add more. Take some away. Say how many are left.</p>
       <div class="ten-frame" aria-label="Ten frame">
-        ${Array.from({ length: 10 }, (_, index) => `<button class="ten-cell ${index < state.play.counters ? "filled" : ""}" data-counter-set="${index + 1}">${index < state.play.counters ? "●" : ""}</button>`).join("")}
+        ${Array.from({ length: 10 }, (_, index) => `<button class="ten-cell ${index < state.play.counters ? "filled" : ""}" data-counter-set="${index + 1}">${index < state.play.counters ? "?" : ""}</button>`).join("")}
       </div>
       <div class="counter-pile">
         ${counters.map((number) => `<span class="counter">${number}</span>`).join("")}
@@ -516,7 +516,7 @@ function patternBoardTool() {
       </div>
       <p>Teacher prompt: Tap boxes to make AB patterns, draw shapes, show answers, or create simple pictures.</p>
       <div class="pattern-board">
-        ${Array.from({ length: 25 }, (_, index) => `<button class="board-cell ${marks.has(index) ? "marked" : ""}" data-board-cell="${index}">${marks.has(index) ? "●" : ""}</button>`).join("")}
+        ${Array.from({ length: 25 }, (_, index) => `<button class="board-cell ${marks.has(index) ? "marked" : ""}" data-board-cell="${index}">${marks.has(index) ? "?" : ""}</button>`).join("")}
       </div>
       <div class="action-row">
         <button class="secondary" data-play-action="board-pattern">Make Pattern</button>
@@ -596,9 +596,9 @@ function writingTargets() {
     })),
     name: [
       {
-        value: state.student?.name || "My Name",
+        value: studentName() || "My Name",
         label: "My Name",
-        prompt: `Trace your name. Say: My name is ${state.student?.name || "my name"}. Copy it neatly in your exercise book.`
+        prompt: `Trace your name. Say: My name is ${studentName() || "my name"}. Copy it neatly in your exercise book.`
       },
       {
         value: "Nkunim",
@@ -632,7 +632,7 @@ function memoryGame() {
 }
 
 function flashCards() {
-  const cards = getTopics().flatMap((topic) => topic.lessons).slice(0, 8);
+  const cards = flatten(getTopics().map((topic) => topic.lessons)).slice(0, 8);
   return `<div class="panel"><h3>Flash Cards</h3><div class="card-grid">${cards.map((card) => `<article class="activity-card"><h3>${lessonBadge(card)} ${card.title}</h3><p>${card.summary}</p></article>`).join("")}</div></div>`;
 }
 
@@ -972,7 +972,7 @@ function stat(label, value) {
 }
 
 function subjectCard(subject) {
-  const stats = state.progress.subjectStats[subject.id]?.lessons || 0;
+  const stats = subjectLessonCount(subject.id);
   return `<button class="subject-card" data-subject="${subject.id}"><span class="subject-icon">${subjectIcon(subject)}</span><h3>${subject.name}</h3><p>${stats} lessons complete</p></button>`;
 }
 
@@ -1140,7 +1140,7 @@ function bindScreen() {
   document.querySelectorAll("[data-writing-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       state.writingMode = button.dataset.writingMode;
-      state.writingTarget = writingTargets()[0]?.value || "A";
+      state.writingTarget = firstWritingTarget();
       render();
     });
   });
@@ -1152,7 +1152,7 @@ function bindScreen() {
 
 async function handleAction(action) {
   const actions = {
-    "speak-screen": () => speak(document.querySelector("main, section")?.innerText || "3D Shapes Adventure"),
+    "speak-screen": () => speak(screenText()),
     "open-settings": () => { state.route = "settings"; render(); },
     "new-profile": () => byId("profileModal").classList.add("show"),
     "close-modal": () => byId("profileModal").classList.remove("show"),
@@ -1165,7 +1165,7 @@ async function handleAction(action) {
     "save-quiz": saveQuiz,
     "start-mock-exam": () => startExam("mock"),
     "start-final-exam": () => startExam("final"),
-    "restart-exam": () => startExam(state.exam?.type || "mock"),
+    "restart-exam": () => startExam((state.exam && state.exam.type) || "mock"),
     "save-exam": saveExam,
     "read-playroom": readPlayroom,
     "read-writing": readWriting,
@@ -1176,7 +1176,7 @@ async function handleAction(action) {
     "ask-tutor": askTutor,
     "save-certificate": saveCertificate,
     "assignment": createAssignment,
-    "install": () => state.installApp?.(),
+    "install": () => state.installApp && state.installApp(),
     "font-up": () => adjustFont(0.1),
     "font-down": () => adjustFont(-0.1)
   };
@@ -1186,8 +1186,8 @@ async function handleAction(action) {
 async function saveProfile() {
   const name = byId("profileName").value.trim() || "Learner";
   const grade = byId("profileGrade").value;
-  const avatar = document.querySelector(".avatar-option.selected")?.dataset.avatar || avatars[0];
-  const student = { id: crypto.randomUUID(), name, grade, avatar, createdAt: new Date().toISOString() };
+  const avatar = selectedAvatar();
+  const student = { id: uniqueId(), name, grade, avatar, createdAt: new Date().toISOString() };
   await putOne("students", student);
   await putOne("progress", defaultProgress(student.id));
   state.students = await getAll("students");
@@ -1228,7 +1228,7 @@ function nextLesson() {
 function readLesson() {
   const lesson = getTopic().lessons[state.lessonIndex] || getTopic().lessons[0];
   const teaching = lesson.teaching || {};
-  const examples = (teaching.workedExamples || []).flatMap((example) => [example.title, ...example.steps]).join(". ");
+  const examples = flatten((teaching.workedExamples || []).map((example) => [example.title].concat(example.steps || []))).join(". ");
   speak(`${getSubject().name}. ${state.grade}. Term ${state.term}. ${lesson.title}. Today's lesson. ${teaching.objective || lesson.summary}. Warm up: ${teaching.warmUp || ""}. Teacher explains: ${teaching.teacherTalk || lesson.summary}. ${teaching.explainMore || ""}. Practical examples: ${(teaching.practicalExamples || []).join(". ")}. Worked example: ${examples}. Self study steps: ${(teaching.selfStudySteps || []).join(". ")}. We do together: ${(teaching.guidedPractice || []).join(". ")}. You try: ${(teaching.independentPractice || []).join(". ")}. I can check: ${(teaching.successCriteria || []).join(". ")}. Challenge: ${teaching.challenge || ""}. Quick check: ${(teaching.checks || []).map((check) => check.q).join(". ")}`);
 }
 
@@ -1336,15 +1336,16 @@ function setupTraceCanvas() {
 
   const pointFromEvent = (event) => {
     const rect = canvas.getBoundingClientRect();
+    const source = event.touches && event.touches.length ? event.touches[0] : event;
     return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: source.clientX - rect.left,
+      y: source.clientY - rect.top
     };
   };
 
   const start = (event) => {
     event.preventDefault();
-    canvas.setPointerCapture?.(event.pointerId);
+    if (canvas.setPointerCapture && event.pointerId !== undefined) canvas.setPointerCapture(event.pointerId);
     activeStroke = [pointFromEvent(event)];
     state.writingStrokes.push(activeStroke);
     drawTraceStrokes(canvas, context);
@@ -1361,14 +1362,24 @@ function setupTraceCanvas() {
     if (!activeStroke) return;
     event.preventDefault();
     activeStroke = null;
-    canvas.releasePointerCapture?.(event.pointerId);
+    if (canvas.releasePointerCapture && event.pointerId !== undefined) canvas.releasePointerCapture(event.pointerId);
   };
 
   resize();
-  canvas.addEventListener("pointerdown", start);
-  canvas.addEventListener("pointermove", move);
-  canvas.addEventListener("pointerup", end);
-  canvas.addEventListener("pointercancel", end);
+  if (window.PointerEvent) {
+    canvas.addEventListener("pointerdown", start);
+    canvas.addEventListener("pointermove", move);
+    canvas.addEventListener("pointerup", end);
+    canvas.addEventListener("pointercancel", end);
+  } else {
+    canvas.addEventListener("touchstart", start, { passive: false });
+    canvas.addEventListener("touchmove", move, { passive: false });
+    canvas.addEventListener("touchend", end, { passive: false });
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mousemove", move);
+    canvas.addEventListener("mouseup", end);
+    canvas.addEventListener("mouseleave", end);
+  }
   window.addEventListener("resize", resize, { once: true });
 }
 
@@ -1432,7 +1443,7 @@ function startExam(type) {
     return;
   }
   state.exam = {
-    id: crypto.randomUUID(),
+    id: uniqueId(),
     type,
     title: type === "final"
       ? `${state.grade} Final Exam - All Subjects`
@@ -1452,14 +1463,10 @@ function startExam(type) {
 
 function buildExamQuestions(type) {
   const sourceTopics = type === "final"
-    ? curriculum.flatMap((subject) =>
-        subject.grades
-          .filter((grade) => grade.grade === state.grade)
-          .flatMap((grade) => grade.terms.flatMap((term) => term.topics.map((topic) => ({ subject, topic }))))
-      )
+    ? finalExamTopics()
     : getTopics().map((topic) => ({ subject: getSubject(), topic }));
 
-  const questions = sourceTopics.flatMap(({ subject, topic }) =>
+  const questions = flatten(sourceTopics.map(({ subject, topic }) =>
     topic.quiz.map((question) => ({
       ...question,
       id: `${type}-${topic.id}-${question.id}`,
@@ -1468,7 +1475,7 @@ function buildExamQuestions(type) {
       topic: topic.id,
       choices: shuffle(question.choices)
     }))
-  );
+  ));
 
   const desiredCount = type === "final" ? 30 : 20;
   return shuffle(questions).slice(0, Math.min(desiredCount, questions.length));
@@ -1542,10 +1549,10 @@ function examFeedback(resultPercent) {
 }
 
 function examStrengths() {
-  const answered = state.exam?.answered || [];
+  const answered = (state.exam && state.exam.answered) || [];
   const bySubject = {};
   answered.forEach((item) => {
-    bySubject[item.subjectName || item.subject] ||= { correct: 0, total: 0 };
+    if (!bySubject[item.subjectName || item.subject]) bySubject[item.subjectName || item.subject] = { correct: 0, total: 0 };
     bySubject[item.subjectName || item.subject].total += 1;
     if (item.correct) bySubject[item.subjectName || item.subject].correct += 1;
   });
@@ -1598,7 +1605,7 @@ function tutorAnswer(question) {
 
 async function saveCertificate() {
   const certificate = {
-    id: crypto.randomUUID(),
+    id: uniqueId(),
     studentId: state.student.id,
     subject: state.subjectId,
     score: bestScore(),
@@ -1610,7 +1617,7 @@ async function saveCertificate() {
 
 async function createAssignment() {
   const assignment = {
-    id: crypto.randomUUID(),
+    id: uniqueId(),
     title: `${getSubject().name} practice`,
     subject: state.subjectId,
     grade: state.grade,
@@ -1659,11 +1666,11 @@ function getSubject() {
 }
 
 function getGradeData() {
-  return curriculum.find((subject) => subject.id === state.subjectId)?.grades.find((grade) => grade.grade === state.grade) || curriculum[0].grades[0];
+  return gradeDataForSubject();
 }
 
 function getTopics() {
-  return getGradeData().terms.find((term) => term.term === state.term)?.topics || [];
+  return topicsForTerm();
 }
 
 function getTopic() {
@@ -1672,7 +1679,7 @@ function getTopic() {
 
 function subjectReports() {
   return SUBJECTS.map((subject) => {
-    const lessons = state.progress.subjectStats[subject.id]?.lessons || 0;
+    const lessons = subjectLessonCount(subject.id);
     return {
       ...subject,
       lessons,
@@ -1680,6 +1687,63 @@ function subjectReports() {
       focus: lessons >= 3 ? "quizzes" : "lessons"
     };
   });
+}
+
+function flatten(groups) {
+  return groups.reduce((items, group) => items.concat(group || []), []);
+}
+
+function uniqueId() {
+  if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+  return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function studentName() {
+  return state.student && state.student.name;
+}
+
+function screenText() {
+  const element = document.querySelector("main, section");
+  return element ? element.innerText : "3D Shapes Adventure";
+}
+
+function selectedAvatar() {
+  const selected = document.querySelector(".avatar-option.selected");
+  return selected ? selected.dataset.avatar : avatars[0];
+}
+
+function firstWritingTarget() {
+  const first = writingTargets()[0];
+  return first ? first.value : "A";
+}
+
+function subjectLessonCount(subjectId) {
+  const stats = state.progress && state.progress.subjectStats ? state.progress.subjectStats[subjectId] : null;
+  return stats ? stats.lessons || 0 : 0;
+}
+
+function gradeDataForSubject() {
+  const subject = curriculum.find((item) => item.id === state.subjectId) || curriculum[0];
+  return subject.grades.find((grade) => grade.grade === state.grade) || curriculum[0].grades[0];
+}
+
+function topicsForTerm() {
+  const term = getGradeData().terms.find((item) => item.term === state.term);
+  return term ? term.topics : [];
+}
+
+function finalExamTopics() {
+  const rows = [];
+  curriculum.forEach((subject) => {
+    subject.grades
+      .filter((grade) => grade.grade === state.grade)
+      .forEach((grade) => {
+        grade.terms.forEach((term) => {
+          term.topics.forEach((topic) => rows.push({ subject, topic }));
+        });
+      });
+  });
+  return rows;
 }
 
 function bestScore() {
@@ -1699,4 +1763,5 @@ window.addEventListener("beforeunload", async () => {
   state.progress.timeSpentSeconds += Math.round((Date.now() - state.startTime) / 1000);
   await putOne("progress", state.progress);
 });
+
 

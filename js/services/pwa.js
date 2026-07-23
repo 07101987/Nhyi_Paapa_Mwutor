@@ -11,11 +11,11 @@ export function setupInstallButton(callback) {
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferredPrompt = event;
-    callback?.(true);
+    if (callback) callback(true);
   });
   window.addEventListener("appinstalled", () => {
     deferredPrompt = null;
-    callback?.(false);
+    if (callback) callback(false);
   });
   return async () => {
     if (!deferredPrompt) {
@@ -25,6 +25,6 @@ export function setupInstallButton(callback) {
     deferredPrompt.prompt();
     await deferredPrompt.userChoice;
     deferredPrompt = null;
-    callback?.(false);
+    if (callback) callback(false);
   };
 }

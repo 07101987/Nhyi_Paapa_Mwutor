@@ -25,7 +25,7 @@ export function awardForQuiz(progress, quizResult) {
 }
 
 export function awardForExam(progress, examResult) {
-  progress.examsTaken ||= [];
+  if (!progress.examsTaken) progress.examsTaken = [];
   progress.examsTaken.push({ ...examResult, at: new Date().toISOString() });
   progress.xp += 30 + Math.round(examResult.percent / 2);
   progress.coins += Math.max(10, Math.round(examResult.percent / 5));
@@ -64,12 +64,14 @@ export function unlockBadges(progress) {
   const worksheetCount = progress.worksheetsCompleted.length;
   badges.forEach((badge) => {
     if (earned.has(badge.id)) return;
-    if (badge.type === "subject" && (subjectCounts[badge.subject]?.lessons || 0) >= badge.target) earned.add(badge.id);
+    const subjectLessons = subjectCounts[badge.subject] ? subjectCounts[badge.subject].lessons || 0 : 0;
+    if (badge.type === "subject" && subjectLessons >= badge.target) earned.add(badge.id);
     if (badge.type === "level" && progress.level >= badge.target) earned.add(badge.id);
     if (badge.type === "quiz" && quizCount >= badge.target) earned.add(badge.id);
     if (badge.type === "exam" && examCount >= badge.target) earned.add(badge.id);
     if (badge.type === "streak" && progress.streak >= badge.target) earned.add(badge.id);
-    if (badge.type === "reading" && (subjectCounts.english?.lessons || 0) >= badge.target) earned.add(badge.id);
+    const englishLessons = subjectCounts.english ? subjectCounts.english.lessons || 0 : 0;
+    if (badge.type === "reading" && englishLessons >= badge.target) earned.add(badge.id);
     if (badge.type === "worksheet" && worksheetCount >= badge.target) earned.add(badge.id);
   });
   progress.badges = [...earned];
@@ -90,6 +92,6 @@ function updateStreak(progress) {
 
 function updateSubjectStats(progress, subject, lessonIncrement) {
   if (!subject) return;
-  progress.subjectStats[subject] ||= { lessons: 0, quizScore: 0, time: 0 };
+  if (!progress.subjectStats[subject]) progress.subjectStats[subject] = { lessons: 0, quizScore: 0, time: 0 };
   progress.subjectStats[subject].lessons += lessonIncrement;
 }

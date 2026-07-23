@@ -19,8 +19,8 @@ const subjects = [
 ];
 
 export const badges = [
-  ...subjects.flatMap(([id, name, icon]) =>
-    tiers.map((tier) => ({
+  ...subjects.reduce((items, [id, name, icon]) =>
+    items.concat(tiers.map((tier) => ({
       id: `${id}-${tier.key}`,
       name: `${name} ${tier.label}`,
       icon,
@@ -28,8 +28,7 @@ export const badges = [
       subject: id,
       target: tier.target,
       description: `Complete ${tier.target} ${name} lesson${tier.target > 1 ? "s" : ""}.`
-    }))
-  ),
+    }))), []),
   ...Array.from({ length: 60 }, (_, index) => ({
     id: `level-${index + 1}`,
     name: `Level ${index + 1} Star`,
