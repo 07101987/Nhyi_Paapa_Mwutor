@@ -1,6 +1,6 @@
 {
-  "name": "3D Shapes Adventure Learning Platform",
-  "short_name": "3D Shapes",
+  "name": "Owrafix Learning App",
+  "short_name": "Owrafix",
   "description": "An offline-first Ghana Basic 1-6 educational platform for lessons, quizzes, worksheets, dashboards, rewards, and certificates.",
   "start_url": "./index.html",
   "scope": "./",
@@ -11,6 +11,12 @@
   "categories": ["education", "kids", "productivity"],
   "lang": "en-GH",
   "icons": [
+    {
+      "src": "assets/owrafix-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "icons/icon-180.png",
       "sizes": "180x180",
@@ -45,3 +51,4 @@
     }
   ]
 }
+

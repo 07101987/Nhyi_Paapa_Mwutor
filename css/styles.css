@@ -150,6 +150,13 @@ body.dark .app-header {
   animation: floaty 3s ease-in-out infinite;
 }
 
+.brand-logo {
+  display: block;
+  object-fit: cover;
+  padding: 0;
+  background: none;
+}
+
 .brand-title {
   display: block;
   overflow: hidden;

@@ -1,4 +1,4 @@
-# 3D Shapes Adventure - iPad Installation Guide
+# Owrafix Learning App - iPad Installation Guide
 
 This app is ready for iPad as a Progressive Web App (PWA). That means it can sit on the iPad Home Screen like a normal app and work offline after it has loaded once.
 
@@ -27,7 +27,7 @@ iPads do not install Windows `.exe`, Linux packages, or normal ZIP app folders. 
 7. Tap **Add to Home Screen**.
 8. Name it:
 
-   `3D Shapes`
+   `Owrafix`
 
 9. Tap **Add**.
 10. Open the new app icon from the iPad Home Screen.
@@ -61,3 +61,4 @@ When you make changes:
 - Open it once before school or travel so it refreshes.
 - Use the Parent Dashboard weekly to check progress.
 - Use Exams for revision before school tests.
+

@@ -1,11 +1,11 @@
-const CACHE_NAME = "shapes-adventure-platform-v15-bigger-menu-games";
+const CACHE_NAME = "owrafix-learning-app-v16-brand";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./reset-cache.html",
   "./manifest.webmanifest",
-  "./css/styles.css?v=20260725-bigger-menu-games",
-  "./js/app.js?v=20260725-bigger-menu-games",
+  "./css/styles.css?v=20260725-owrafix-brand",
+  "./js/app.js?v=20260725-owrafix-brand",
   "./js/data/curriculum.js",
   "./js/data/badges.js",
   "./js/services/db.js",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./js/services/rewards.js",
   "./js/services/speech.js",
   "./js/services/utils.js",
+  "./assets/owrafix-logo.svg",
   "./icons/icon-180.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"

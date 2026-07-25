@@ -70,9 +70,9 @@ function header() {
   return `
     <header class="app-header">
       <div class="brand">
-        <span class="brand-mark">3D</span>
+        <img class="brand-mark brand-logo" src="assets/owrafix-logo.svg" alt="Owrafix logo" />
         <span>
-          <span class="brand-title">3D Shapes Adventure</span>
+          <span class="brand-title">Owrafix Learning App</span>
           <span class="brand-subtitle">Ghana Basic 1-6 Learning Platform</span>
         </span>
       </div>
@@ -132,7 +132,7 @@ function homeScreen() {
           <button class="secondary" data-action="daily-reward">Daily Reward</button>
         </div>
       </div>
-      <div class="mascot" aria-hidden="true">3D</div>
+      <div class="mascot" aria-hidden="true">OF</div>
     </section>
     <section class="quick-stats">
       ${stat("XP", state.progress.xp)}
@@ -1082,7 +1082,7 @@ function certificateScreen() {
       <div class="certificate printable">
         <p>This certificate is proudly awarded to</p>
         <h2>${state.student.name}</h2>
-        <h3>3D Shapes Adventure Champion</h3>
+        <h3>Owrafix Learning Champion</h3>
         <p>Subject: ${getSubject().name}</p>
         <p>Score: ${bestScore()}%</p>
         <p>Date: ${formatDate()}</p>
@@ -1923,7 +1923,7 @@ function studentName() {
 
 function screenText() {
   const element = document.querySelector("main, section");
-  return element ? element.innerText : "3D Shapes Adventure";
+  return element ? element.innerText : "Owrafix Learning App";
 }
 
 function selectedAvatar() {
@@ -1982,5 +1982,6 @@ window.addEventListener("beforeunload", async () => {
   state.progress.timeSpentSeconds += Math.round((Date.now() - state.startTime) / 1000);
   await putOne("progress", state.progress);
 });
+
 
 

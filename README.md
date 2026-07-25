@@ -1,6 +1,6 @@
-# 3D Shapes Adventure Learning Platform
+# Owrafix Learning App
 
-An offline-first Ghana-focused educational platform for Basic 1 to Basic 6 learners. It combines the original 3D Shapes Adventure features with a scalable curriculum engine, profiles, rewards, dashboards, worksheets, certificates, and PWA install support.
+An offline-first Ghana-focused educational platform for Basic 1 to Basic 6 learners. It combines 3D shape learning, Ghana curriculum lessons, profiles, rewards, dashboards, worksheets, certificates, and PWA install support.
 
 ## Features
 
@@ -92,3 +92,4 @@ The curriculum is generated from `js/data/curriculum.js`. To add richer content:
 ## Notes
 
 The AI tutor is currently a safe offline tutor helper, not a cloud AI chatbot. It gives child-safe hints from local curriculum rules and does not transmit data.
+
