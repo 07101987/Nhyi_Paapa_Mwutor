@@ -1,11 +1,11 @@
-const CACHE_NAME = "shapes-adventure-platform-v13-large-tracing";
+const CACHE_NAME = "shapes-adventure-platform-v15-bigger-menu-games";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./reset-cache.html",
   "./manifest.webmanifest",
-  "./css/styles.css?v=20260723-large-tracing",
-  "./js/app.js?v=20260723-large-tracing",
+  "./css/styles.css?v=20260725-bigger-menu-games",
+  "./js/app.js?v=20260725-bigger-menu-games",
   "./js/data/curriculum.js",
   "./js/data/badges.js",
   "./js/services/db.js",

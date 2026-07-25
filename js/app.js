@@ -24,6 +24,8 @@ const state = {
   writingMode: "letters",
   writingTarget: "A",
   writingStrokes: [],
+  wordPuzzle: null,
+  numberGame: null,
   play: {
     counters: 6,
     clockHour: 3,
@@ -383,6 +385,8 @@ function practiceScreen() {
         ${activityButton("Memo", "Memory Game", "Flip cards and remember matching pairs.", "memory")}
         ${activityButton("Cards", "Flash Cards", "Quick subject flash cards for revision.", "flashcards")}
         ${activityButton("Write", "Writing and Tracing", "Trace letters, numbers, words, and your name.", "writing")}
+        ${activityButton("Word", "Word Puzzle", "Build sight words and Ghana words from mixed letters.", "word-puzzle")}
+        ${activityButton("123", "Number Games", "Play counting, missing number, addition, and subtraction games.", "number-games")}
       </div>
       <div id="practiceArea">${practiceActivity()}</div>
     </section>
@@ -402,6 +406,8 @@ function practiceActivity() {
   if (mode === "memory") return memoryGame();
   if (mode === "flashcards") return flashCards();
   if (mode === "writing") return writingTool("practice");
+  if (mode === "word-puzzle") return wordPuzzleTool("practice");
+  if (mode === "number-games") return numberGameTool("practice");
   return matchingGame();
 }
 
@@ -411,7 +417,9 @@ function playroomScreen() {
     ["clock", "Clock", "Move the hour and minute hands to practise time."],
     ["spinner", "Spinner", "Spin for quick revision prompts and classroom turns."],
     ["board", "Pattern Board", "Tap squares to make patterns, shapes, and picture answers."],
-    ["writing", "Writing", "Trace letters, numbers, sight words, and names."]
+    ["writing", "Writing", "Trace letters, numbers, sight words, and names."],
+    ["words", "Word Puzzle", "Build words from mixed letters."],
+    ["numbers", "Number Games", "Practise counting, order, addition, and subtraction."]
   ];
   return `
     <section class="panel">
@@ -434,6 +442,8 @@ function playTool() {
   if (state.playTool === "spinner") return spinnerTool();
   if (state.playTool === "board") return patternBoardTool();
   if (state.playTool === "writing") return writingTool("play");
+  if (state.playTool === "words") return wordPuzzleTool("play");
+  if (state.playTool === "numbers") return numberGameTool("play");
   return countersTool();
 }
 
@@ -617,6 +627,172 @@ function traceSizeClass(value) {
   if (length <= 2) return "trace-lg";
   if (length <= 5) return "trace-md";
   return "trace-word";
+}
+
+function wordPuzzleTool(source = "practice") {
+  if (!state.wordPuzzle) state.wordPuzzle = makeWordPuzzle();
+  const puzzle = state.wordPuzzle;
+  const built = puzzle.selected.map((index) => puzzle.letters[index]).join("");
+  return `
+    <section class="manipulative-card word-game">
+      <div class="tool-header">
+        <h3>Word Puzzle</h3>
+        <span class="tool-score">${puzzle.word}</span>
+      </div>
+      <p>Tap the mixed letters in the right order to build the word. Say each sound, then read the whole word.</p>
+      <div class="word-target">${puzzle.hint}</div>
+      <div class="word-answer">${built || "Tap letters"}</div>
+      <div class="letter-bank">
+        ${puzzle.letters.map((letter, index) => `<button class="letter-tile ${puzzle.selected.indexOf(index) >= 0 ? "used" : ""}" data-word-index="${index}" ${puzzle.selected.indexOf(index) >= 0 ? "disabled" : ""}>${letter}</button>`).join("")}
+      </div>
+      <p class="game-feedback">${puzzle.feedback || "Build the word from left to right."}</p>
+      <div class="action-row">
+        <button class="secondary" data-word-action="clear">Clear</button>
+        <button class="primary" data-word-action="check">Check Word</button>
+        <button class="secondary" data-action="read-word-puzzle">Read Clue</button>
+        <button class="primary" data-word-action="new">New Word</button>
+      </div>
+      ${source === "practice" ? `<p class="pill">Tip: Word Puzzle is also inside Playroom.</p>` : ""}
+    </section>
+  `;
+}
+
+function makeWordPuzzle() {
+  const words = [
+    { word: "AM", hint: "Sight word: I am happy." },
+    { word: "SEE", hint: "Sight word: I see a book." },
+    { word: "MY", hint: "Sight word: This is my bag." },
+    { word: "WE", hint: "Sight word: We go to school." },
+    { word: "GO", hint: "Action word: go to class." },
+    { word: "CAT", hint: "Phonics word: /c/ /a/ /t/." },
+    { word: "SUN", hint: "Science word: we see it in the day." },
+    { word: "GHANA", hint: "Our country." },
+    { word: "RED", hint: "A colour in the Ghana flag." },
+    { word: "GOLD", hint: "A colour in the Ghana flag." },
+    { word: "GREEN", hint: "A colour in the Ghana flag." }
+  ];
+  const item = words[Math.floor(Math.random() * words.length)];
+  return {
+    word: item.word,
+    hint: item.hint,
+    letters: shuffle(item.word.split("")),
+    selected: [],
+    feedback: ""
+  };
+}
+
+async function wordPuzzleAction(action, index) {
+  if (!state.wordPuzzle) state.wordPuzzle = makeWordPuzzle();
+  if (action === "pick") {
+    if (state.wordPuzzle.selected.indexOf(index) < 0) state.wordPuzzle.selected.push(index);
+    render();
+    return;
+  }
+  if (action === "clear") {
+    state.wordPuzzle.selected = [];
+    state.wordPuzzle.feedback = "Try again. Tap the first letter first.";
+    render();
+    return;
+  }
+  if (action === "new") {
+    state.wordPuzzle = makeWordPuzzle();
+    render();
+    return;
+  }
+  if (action === "check") {
+    const built = state.wordPuzzle.selected.map((letterIndex) => state.wordPuzzle.letters[letterIndex]).join("");
+    const correct = built === state.wordPuzzle.word;
+    state.wordPuzzle.feedback = correct ? "Correct. You built the word!" : `Try again. You built ${built || "nothing"} but the word is ${state.wordPuzzle.word}.`;
+    if (correct) {
+      state.progress.xp += 5;
+      state.progress.coins += 2;
+      await putOne("progress", state.progress);
+      speak(`Correct. ${state.wordPuzzle.word}.`);
+      confetti(30);
+    } else {
+      speak(`Try again. The word is ${state.wordPuzzle.word}.`);
+    }
+    render();
+  }
+}
+
+function numberGameTool(source = "practice") {
+  if (!state.numberGame) state.numberGame = makeNumberGame();
+  const game = state.numberGame;
+  return `
+    <section class="manipulative-card number-game">
+      <div class="tool-header">
+        <h3>Number Games</h3>
+        <span class="tool-score">${game.type}</span>
+      </div>
+      <p>Read the number question. Use fingers, counters, or the ten frame to solve before tapping an answer.</p>
+      <div class="number-question">${game.question}</div>
+      <div class="number-visual">${game.visual}</div>
+      <div class="number-options">
+        ${game.choices.map((choice) => `<button class="number-choice" data-number-choice="${choice}">${choice}</button>`).join("")}
+      </div>
+      <p class="game-feedback">${game.feedback || "Choose the best answer."}</p>
+      <div class="action-row">
+        <button class="secondary" data-action="read-number-game">Read Question</button>
+        <button class="primary" data-number-action="new">New Number Game</button>
+      </div>
+      ${source === "practice" ? `<p class="pill">Tip: Number Games are also inside Playroom.</p>` : ""}
+    </section>
+  `;
+}
+
+function makeNumberGame() {
+  const type = ["Counting", "Missing Number", "Addition", "Subtraction"][Math.floor(Math.random() * 4)];
+  if (type === "Counting") {
+    const answer = 1 + Math.floor(Math.random() * 12);
+    return numberGameItem(type, `How many dots can you count?`, answer, dotVisual(answer));
+  }
+  if (type === "Missing Number") {
+    const answer = 2 + Math.floor(Math.random() * 17);
+    return numberGameItem(type, `What number is missing? ${answer - 1}, __, ${answer + 1}`, answer, "Say the numbers in order.");
+  }
+  if (type === "Addition") {
+    const a = 1 + Math.floor(Math.random() * 8);
+    const b = 1 + Math.floor(Math.random() * 6);
+    return numberGameItem(type, `What is ${a} + ${b}?`, a + b, `${dotVisual(a)} + ${dotVisual(b)}`);
+  }
+  const start = 5 + Math.floor(Math.random() * 10);
+  const take = 1 + Math.floor(Math.random() * Math.min(5, start - 1));
+  return numberGameItem(type, `What is ${start} - ${take}?`, start - take, `${dotVisual(start)} take away ${take}`);
+}
+
+function numberGameItem(type, question, answer, visual) {
+  const options = [];
+  [answer, answer + 1, Math.max(0, answer - 1), answer + 2, answer + 3].forEach((item) => {
+    if (options.indexOf(item) < 0) options.push(item);
+  });
+  const choices = shuffle(options).slice(0, 4);
+  return { type, question, answer: String(answer), choices, visual, feedback: "" };
+}
+
+function dotVisual(count) {
+  return Array.from({ length: count }, () => "<span></span>").join("");
+}
+
+async function numberGameAction(action, selected) {
+  if (action === "new") {
+    state.numberGame = makeNumberGame();
+    render();
+    return;
+  }
+  if (!state.numberGame) state.numberGame = makeNumberGame();
+  const correct = String(selected) === state.numberGame.answer;
+  state.numberGame.feedback = correct ? "Correct. Great number thinking!" : `Try again. The answer is ${state.numberGame.answer}.`;
+  if (correct) {
+    state.progress.xp += 5;
+    state.progress.coins += 2;
+    await putOne("progress", state.progress);
+    speak("Correct. Great number thinking.");
+    confetti(30);
+  } else {
+    speak(`Try again. The answer is ${state.numberGame.answer}.`);
+  }
+  render();
 }
 
 function matchingGame() {
@@ -1088,7 +1264,7 @@ function bindScreen() {
   document.querySelectorAll("[data-activity]").forEach((button) => {
     button.addEventListener("click", () => {
       const value = button.dataset.activity;
-      if (["matching", "memory", "flashcards", "shape-lessons", "writing"].includes(value)) {
+      if (["matching", "memory", "flashcards", "shape-lessons", "writing", "word-puzzle", "number-games"].includes(value)) {
         sessionStorage.setItem("practiceMode", value);
         state.route = "practice";
       } else {
@@ -1156,6 +1332,18 @@ function bindScreen() {
   document.querySelectorAll("[data-writing-action]").forEach((button) => {
     button.addEventListener("click", () => writingAction(button.dataset.writingAction));
   });
+  document.querySelectorAll("[data-word-index]").forEach((button) => {
+    button.addEventListener("click", () => wordPuzzleAction("pick", Number(button.dataset.wordIndex)));
+  });
+  document.querySelectorAll("[data-word-action]").forEach((button) => {
+    button.addEventListener("click", () => wordPuzzleAction(button.dataset.wordAction));
+  });
+  document.querySelectorAll("[data-number-choice]").forEach((button) => {
+    button.addEventListener("click", () => numberGameAction("answer", button.dataset.numberChoice));
+  });
+  document.querySelectorAll("[data-number-action]").forEach((button) => {
+    button.addEventListener("click", () => numberGameAction(button.dataset.numberAction));
+  });
   setupTraceCanvas();
 }
 
@@ -1178,6 +1366,8 @@ async function handleAction(action) {
     "save-exam": saveExam,
     "read-playroom": readPlayroom,
     "read-writing": readWriting,
+    "read-word-puzzle": readWordPuzzle,
+    "read-number-game": readNumberGame,
     "daily-reward": dailyReward,
     "new-worksheet": newWorksheet,
     "complete-worksheet": completeWorksheet,
@@ -1414,7 +1604,9 @@ function readPlayroom() {
     clock: `Teaching clock. The time is ${state.play.clockHour}:${String(state.play.clockMinute).padStart(2, "0")}. Say the time aloud.`,
     spinner: `Revision spinner. The task is ${state.play.spinnerResult}. Try it now.`,
     board: `Pattern board. Tap boxes to make patterns, shapes, and picture answers.`,
-    writing: readWritingText()
+    writing: readWritingText(),
+    words: wordPuzzleText(),
+    numbers: numberGameText()
   };
   speak(prompts[state.playTool] || "Learning Playroom.");
 }
@@ -1426,6 +1618,24 @@ function readWriting() {
 function readWritingText() {
   const current = writingTargets().find((item) => item.value === state.writingTarget) || writingTargets()[0];
   return `Writing and tracing. ${current.label}. ${current.prompt}`;
+}
+
+function readWordPuzzle() {
+  speak(wordPuzzleText());
+}
+
+function wordPuzzleText() {
+  if (!state.wordPuzzle) state.wordPuzzle = makeWordPuzzle();
+  return `Word puzzle. ${state.wordPuzzle.hint}. Build the word ${state.wordPuzzle.word}.`;
+}
+
+function readNumberGame() {
+  speak(numberGameText());
+}
+
+function numberGameText() {
+  if (!state.numberGame) state.numberGame = makeNumberGame();
+  return `Number game. ${state.numberGame.question}`;
 }
 
 async function saveQuiz() {
